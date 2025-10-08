@@ -1,83 +1,69 @@
-from flask import request, jsonify, send_from_directory
+from flask import request, jsonify
 from service.caso_service import CasoService
-import os
-
-UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "uploads")
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+import base64
 
 caso_service = CasoService()
 
 def init_routes(app):
     @app.route("/caso", methods=["POST"])
     def create_case():
-        data = request.form if request.form else request.get_json()
-        nome = data.get("nome")
-        raca = data.get("raca")
-        idade = data.get("idade")
-        descricao = data.get("descricao")
-        foto = request.files.getlist("foto")
-        caminhos_imagens = []
+        nome = request.form.get("nome")
+        raca = request.form.get("raca")
+        idade = request.form.get("idade")
+        descricao = request.form.get("descricao")
+        fotos_files = request.files.getlist("foto")
 
-        for img in foto:
-            if img.filename != "":
-                caminho = os.path.join(UPLOAD_FOLDER, img.filename)
-                img.save(caminho)
-                caminhos_imagens.append(img.filename)
+        foto_base64 = None
+        if fotos_files and fotos_files[0].filename:
+            ext = fotos_files[0].filename.split('.')[-1]
+            foto_base64 = f"data:image/{ext};base64,{base64.b64encode(fotos_files[0].read()).decode('utf-8')}"
 
         novo_caso = caso_service.criar_caso(
             nome=nome,
             raca=raca,
             idade=idade,
             descricao=descricao,
-            foto=caminhos_imagens
+            foto=foto_base64
         )
 
-        return jsonify({"mensagem": "Caso criado com sucesso!", "caso": novo_caso}), 201
+        return jsonify({
+            "mensagem": novo_caso["mensagem"],
+            "id": novo_caso["id"],
+            "foto": foto_base64
+        }), 201
 
     @app.route("/caso", methods=["GET"])
     def get_casos():
         casos = caso_service.get_casos()
         return jsonify(casos), 200
 
-    @app.route("/uploads/<filename>")
-    def uploaded_file(filename):
-        return send_from_directory(UPLOAD_FOLDER, filename)
-    
-
     @app.route("/caso/<int:id>", methods=["DELETE"])
     def delete_caso(id):
         resultado = caso_service.excluir_casos(id)
-
         if resultado is None:
             return jsonify({"mensagem": "Caso não encontrado"}), 404
-        else:
-            return jsonify({"mensagem": "Caso excluído com sucesso", "id": id}), 200
-        
+        return jsonify({"mensagem": "Caso excluído com sucesso", "id": id}), 200
 
     @app.route("/caso/<int:id>", methods=["PUT"])
     def put_case(id):
-       
         nome = request.form.get("nome")
         raca = request.form.get("raca")
         idade = request.form.get("idade")
         descricao = request.form.get("descricao")
-        fotos = request.files.getlist("foto")
+        foto_file = request.files.get("foto")  # apenas 1 foto
 
-        caminhos_imagens = []
-        for img in fotos:
-            if img.filename != "":
-                caminho = os.path.join(UPLOAD_FOLDER, img.filename)
-                img.save(caminho)
-                caminhos_imagens.append(img.filename)
+        foto_base64 = None
+        if foto_file and foto_file.filename:
+            ext = foto_file.filename.split('.')[-1]
+            foto_base64 = f"data:image/{ext};base64,{base64.b64encode(foto_file.read()).decode('utf-8')}"
 
-        
         resultado = caso_service.update_caso(
             id=id,
             nome=nome,
             raca=raca,
             idade=idade,
             descricao=descricao,
-            foto=caminhos_imagens if caminhos_imagens else None
+            foto=foto_base64
         )
 
         if not resultado:

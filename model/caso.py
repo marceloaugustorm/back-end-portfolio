@@ -1,5 +1,6 @@
 from config.database import db
 import json
+import base64
 
 class Caso(db.Model):  
     __tablename__ = 'casos'
@@ -9,7 +10,7 @@ class Caso(db.Model):
     raca = db.Column(db.String(100), nullable=False)
     idade = db.Column(db.String(100), nullable=False)
     descricao = db.Column(db.Text, nullable=False)  
-    foto = db.Column(db.Text, nullable=True)  
+    foto = db.Column(db.Text, nullable=True)  # uma string base64
 
     def to_dict_caso(self):
         return {
@@ -18,5 +19,6 @@ class Caso(db.Model):
             "raca": self.raca,
             "idade": self.idade,
             "descricao": self.descricao,
-            "foto": self.foto  
+            "foto": self.foto  # apenas a string base64
         }
+
