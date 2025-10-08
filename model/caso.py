@@ -1,7 +1,7 @@
 from config.database import db
 import json
 
-class Caso(db.Model):  # com "M" maiúsculo em Model
+class Caso(db.Model):  
     __tablename__ = 'casos'
 
     id = db.Column(db.Integer, primary_key=True)
