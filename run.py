@@ -8,33 +8,23 @@ from flask_cors import CORS
 
 def create_app():
     app = Flask(__name__, static_folder="build/static", template_folder="build")
-
-    # ----------------- CORS -----------------
-    CORS(
-        app,
-        resources={r"/*": {"origins": "https://portfolio-psi-woad-66.vercel.app"}},
-        supports_credentials=True,
-        allow_headers="*",
-        methods="*"
-    )
-
-    # ---------------- JWT ------------------
-    app.config["JWT_SECRET_KEY"] = "flaroque"
+    CORS(app)
+    
+    app.config["JWT_SECRET_KEY"] = "flaroque"  
     JWTManager(app)
 
-    # ------------- Banco -------------------
+    # Inicializa banco
     init_db(app)
 
-    # ------------- Rotas ------------------
+    # Registra rotas
     user_routes(app)
     caso_routes(app)
 
-    # ------------- Criação das tabelas -------------
     with app.app_context():
         db.create_all()
         print("Tabelas criadas!")
 
-    # ------------- Serve React build -------------
+    # Serve React build
     @app.route("/", defaults={"path": ""})
     @app.route("/<path:path>")
     def serve(path):
@@ -45,7 +35,6 @@ def create_app():
 
     return app
 
-# ----------------- App -----------------
 app = create_app()
 
 if __name__ == "__main__":
