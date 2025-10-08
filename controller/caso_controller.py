@@ -31,7 +31,10 @@ def init_routes(app):
         raca = request.form.get("raca")
         idade = request.form.get("idade")
         descricao = request.form.get("descricao")
-        fotos = request.files.getlist("foto")
+
+        # pega o arquivo único enviado
+        foto = request.files.get("foto")
+        fotos = [foto] if foto else []
 
         resultado = caso_service.update_caso(id, nome, raca, idade, descricao, fotos)
         if not resultado:
