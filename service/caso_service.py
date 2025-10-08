@@ -69,20 +69,25 @@ class CasoService:
         if not caso:
             return None
 
+        # Atualiza os campos básicos
         caso.nome = nome
         caso.raca = raca
         caso.idade = idade
         caso.descricao = descricao
 
+        # Atualiza as fotos apenas se vierem novas
         if fotos:
             urls = []
             for img in fotos:
                 if img.filename != "":
+                    # Envia para Cloudinary
                     result = cloudinary.uploader.upload(img)
                     urls.append(result["secure_url"])
+            # Substitui as fotos antigas
             caso.foto = json.dumps(urls)
 
         db.session.commit()
+
         return {
             "id": caso.id,
             "nome": caso.nome,
