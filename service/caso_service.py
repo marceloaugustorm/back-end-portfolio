@@ -2,34 +2,20 @@ from domain.caso_domain import CasoDomain
 from model.caso import Caso
 from config.database import db
 import json
-import cloudinary
-import cloudinary.uploader
-import os
-
-
-cloudinary.config(
-    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
-    api_key=os.getenv("CLOUDINARY_API_KEY"),
-    api_secret=os.getenv("CLOUDINARY_API_SECRET")
-)
 
 class CasoService:
-    def criar_caso(self, nome, raca, idade, descricao, fotos):
-        urls = []
+    def criar_caso(self, nome, raca, idade, descricao, foto):
+    
+        imagens_como_string = json.dumps(foto)
+        new_caso = CasoDomain(nome, raca, idade, descricao, imagens_como_string)
 
-        for img in fotos:
-            if img and img.filename != "":
-                result = cloudinary.uploader.upload(img)
-                urls.append(result["secure_url"])
-
-        imagens_como_string = json.dumps(urls)
-
+       
         caso = Caso(
-            nome=nome,
-            raca=raca,
-            idade=idade,
-            descricao=descricao,
-            foto=imagens_como_string
+            nome=new_caso.nome,
+            raca=new_caso.raca,
+            idade=new_caso.idade,
+            descricao=new_caso.descricao,
+            foto=new_caso.foto 
         )
 
         db.session.add(caso)
@@ -39,53 +25,62 @@ class CasoService:
 
     def get_casos(self):
         casos = Caso.query.all()
-        lista = []
-        for c in casos:
-            lista.append({
-                "id": c.id,
-                "nome": c.nome,
-                "raca": c.raca,
-                "idade": c.idade,
-                "descricao": c.descricao,
-                "foto": json.loads(c.foto) if c.foto else []
-            })
-        return lista
+        result = []
+
+        for caso in casos:
+            d = caso.to_dict_caso()
+            try:
+                d['foto'] = json.loads(d['foto'])
+            except:
+                d['foto'] = []
+            result.append(d)
+
+        return result
+    
 
     def excluir_casos(self, id):
-        caso = Caso.query.get(id)
+        caso = Caso.query.filter_by(id=id).first()
+
         if not caso:
             return None
+
+        
         db.session.delete(caso)
         db.session.commit()
-        return {"id": id}
 
-    def update_caso(self, id, nome, raca, idade, descricao, fotos):
-        caso = Caso.query.get(id)
+        return caso.to_dict_caso()
+
+
+    def update_caso(self, id, nome, raca, idade, descricao, foto):
+        new_caso = CasoDomain(nome, raca, idade, descricao, foto)
+
+        caso = Caso.query.filter_by( id = id).first()
+
         if not caso:
             return None
+        
+        else:
+            caso.nome = nome 
+            caso.raca = raca
+            caso.idade = idade
+            caso.descricao =descricao
+            
+            if foto:
+                caso.foto = foto
 
-        caso.nome = nome
-        caso.raca = raca
-        caso.idade = idade
-        caso.descricao = descricao
+            db.session.commit()
 
-        # Se enviar nova foto, faz upload e substitui
-        if fotos:
-            urls = []
-            for img in fotos:
-                if img and img.filename != "":
-                    result = cloudinary.uploader.upload(img)
-                    urls.append(result["secure_url"])
-            if urls:
-                caso.foto = json.dumps(urls)  # substitui fotos antigas
-
-        db.session.commit()
-
-        return {
+            return {
             "id": caso.id,
             "nome": caso.nome,
             "raca": caso.raca,
             "idade": caso.idade,
             "descricao": caso.descricao,
-            "foto": json.loads(caso.foto) if caso.foto else []
+            "foto": caso.foto,
         }
+
+           
+
+
+
+
