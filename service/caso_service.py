@@ -2,7 +2,6 @@ from domain.caso_domain import CasoDomain
 from model.caso import Caso
 from config.database import db
 import json
-
 import cloudinary
 import cloudinary.uploader
 import os
@@ -19,12 +18,10 @@ class CasoService:
         urls = []
 
         for img in fotos:
-            if img.filename != "":
-               
+            if img and img.filename != "":
                 result = cloudinary.uploader.upload(img)
-                urls.append(result["secure_url"])  
+                urls.append(result["secure_url"])
 
-        
         imagens_como_string = json.dumps(urls)
 
         caso = Caso(
@@ -53,7 +50,6 @@ class CasoService:
                 "foto": json.loads(c.foto) if c.foto else []
             })
         return lista
-    
 
     def excluir_casos(self, id):
         caso = Caso.query.get(id)
@@ -63,28 +59,25 @@ class CasoService:
         db.session.commit()
         return {"id": id}
 
-
     def update_caso(self, id, nome, raca, idade, descricao, fotos):
         caso = Caso.query.get(id)
         if not caso:
             return None
 
-        
         caso.nome = nome
         caso.raca = raca
         caso.idade = idade
         caso.descricao = descricao
 
-        
+        # Se enviar nova foto, faz upload e substitui
         if fotos:
             urls = []
             for img in fotos:
-                if img.filename != "":
-                   
+                if img and img.filename != "":
                     result = cloudinary.uploader.upload(img)
                     urls.append(result["secure_url"])
-            
-            caso.foto = json.dumps(urls)
+            if urls:
+                caso.foto = json.dumps(urls)  # substitui fotos antigas
 
         db.session.commit()
 
@@ -96,9 +89,3 @@ class CasoService:
             "descricao": caso.descricao,
             "foto": json.loads(caso.foto) if caso.foto else []
         }
-
-           
-
-
-
-

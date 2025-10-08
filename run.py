@@ -14,8 +14,8 @@ def create_app():
         app,
         resources={r"/*": {"origins": "https://portfolio-psi-woad-66.vercel.app"}},
         supports_credentials=True,
-        allow_headers=["Content-Type", "Authorization"],
-        methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+        allow_headers="*",
+        methods="*"
     )
 
     # ---------------- JWT ------------------
