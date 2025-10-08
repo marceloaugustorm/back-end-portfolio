@@ -1,5 +1,12 @@
+# Flask e extensões
 Flask>=2.3.0
 Flask-JWT-Extended>=4.5.0
 Flask-Cors>=3.1.0
 Flask-SQLAlchemy>=3.0.5
+
+# Driver PostgreSQL
 psycopg2-binary>=2.9.8
+
+# Dependências opcionais úteis
+python-dotenv>=1.0.0   # Para variáveis de ambiente
+cloudinary>=1.32.0     # Para upload de imagens
