@@ -2,7 +2,7 @@ from flask import request, jsonify, send_from_directory
 from service.caso_service import CasoService
 import os
 
-UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "uploads")
+UPLOAD_FOLDER = os.path.join(os.getcwd(), "uploads")
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 caso_service = CasoService()
@@ -41,6 +41,12 @@ def init_routes(app):
 
     @app.route("/uploads/<filename>")
     def uploaded_file(filename):
+        caminho_completo = os.path.join(UPLOAD_FOLDER, filename)
+        print(f"🖼️ Servindo imagem: {caminho_completo}")  
+
+        if not os.path.exists(caminho_completo):
+            return jsonify({"erro": "Arquivo não encontrado"}), 404
+
         return send_from_directory(UPLOAD_FOLDER, filename)
     
 
