@@ -14,7 +14,7 @@ def init_db(app):
     usuario = os.getenv("DB_USER", "postgres.iuxpgppxturbydloixyq")  # usuário completo do Supabase
     senha = os.getenv("DB_PASS", "marMAR@02")  # senha com @
     host = os.getenv("DB_HOST", "aws-1-us-east-2.pooler.supabase.com")
-    porta = os.getenv("DB_PORT", "6543")  # porta do PgBouncer (pooling)
+    porta = os.getenv("DB_PORT", "5432")  # porta do PgBouncer (pooling)
     banco = os.getenv("DB_NAME", "postgres")
 
     
