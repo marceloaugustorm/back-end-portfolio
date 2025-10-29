@@ -1,6 +1,7 @@
 import os
 import urllib.parse
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import text
 
 db = SQLAlchemy()
 
@@ -32,7 +33,7 @@ def init_db(app):
     # Teste rápido de conexão
     try:
         with app.app_context():
-            result = db.session.execute("SELECT 1;")
+            result = db.session.execute(text("SELECT 1;"))
             print("Conexão com o banco bem-sucedida! Resultado teste:", result.scalar())
     except Exception as e:
         print("Erro ao conectar no banco:", e)
