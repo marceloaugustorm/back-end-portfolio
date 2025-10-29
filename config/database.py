@@ -16,11 +16,11 @@ def init_db(app):
     porta = os.getenv("DB_PORT", "6543")  # porta do PgBouncer (pooling)
     banco = os.getenv("DB_NAME", "postgres")
 
-    # Escapa caracteres especiais
+    
     usuario = urllib.parse.quote_plus(usuario)
     senha = urllib.parse.quote_plus(senha)
 
-    # String de conexão válida para psycopg2
+    
     app.config['SQLALCHEMY_DATABASE_URI'] = (
         f"postgresql+psycopg2://{usuario}:{senha}@{host}:{porta}/{banco}?sslmode=require"
     )
